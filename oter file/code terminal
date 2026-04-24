@@ -4,3 +4,14 @@ git add .
 git commit -m "update: ALL"
 
 git push origin main
+
+<body class="text-slate-300 antialiased selection:bg-cyan-500/30">
+
+    <div class="shiba-container">
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ29yeWJqamRxZmx4ZW16bm94em5yeXF4emJxeXF4emJxeXF4ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/X8y7W6qY6aO0uP6GvU/giphy.gif" 
+             alt="Shiba Run" 
+             class="shiba-sprite">
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center p-4 py-12">
+        ...
