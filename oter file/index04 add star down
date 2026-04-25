@@ -35,19 +35,19 @@
         @keyframes shooting {
             0% {
                 opacity: 0;
-                transform: rotate(95deg) translateX(0);
+                transform: rotate(135deg) translateX(0);
             }
             1% {
                 opacity: 1;
             }
             100% {
-                /* วิ่งยาวข้ามจอ 3000px ไปจนสุดมุมซ้ายล่าง */
-                transform: rotate(125deg) translateX(2000px); 
+                
+                transform: rotate(135deg) translateX(1500px); 
                 opacity: 0; 
             }
         }
 
-       /* กลุ่มที่เกิดตามขอบบน (ทะยอยร่วงลงมาตรงกลางและซ้าย) */
+       
         .star:nth-child(1) { top: -10%; left: 20%; width: 100px; animation-duration: 2.5s; animation-delay: 0s; }
         .star:nth-child(2) { top: -10%; left: 50%; width: 150px; animation-duration: 3.2s; animation-delay: 1.2s; }
         .star:nth-child(3) { top: -10%; left: 80%; width: 80px; animation-duration: 2.1s; animation-delay: 0.5s; }
@@ -129,7 +129,7 @@
         .delay-17 { animation-delay: 1.7s; }
         .delay-18 { animation-delay: 1.8s; }
         .delay-19 { animation-delay: 1.9s; }
-        /* การตั้ง Delay แบบไล่ระดับ (เหมาะสำหรับ 20 Cards) */
+       
         
         /* แถวที่ 1 */
         .delay-1 { animation-delay: 0.1s; }
@@ -172,7 +172,7 @@
 
         @keyframes typing {
             from { width: 0 }
-            to { width: 30% }  /*ปรับความกว้างของข้อความที่ต้องการให้พิมพ์ออกมา (เช่น 30% ของความกว้างคอนเทนเนอร์) */
+            to { width: 37ch } 
         }
 
         @keyframes blink {
