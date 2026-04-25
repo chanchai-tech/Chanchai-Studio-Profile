@@ -24,14 +24,14 @@
         .star {
             position: absolute;
             height: 2px;
-            /* สีของดาวตก */
+            
             background: linear-gradient(90deg, transparent, #22d3ee, #ffffff);
             filter: drop-shadow(0 0 5px #22d3ee);
             border-radius: 999px;
             animation: shooting linear infinite; 
         }
 
-        /* ปรับองศาเป็น 225deg เพื่อให้พุ่งเฉียงลงซ้ายล่าง */
+       
         @keyframes shooting {
             0% {
                 opacity: 0;
@@ -54,14 +54,14 @@
         .star:nth-child(4) { top: -10%; left: 110%; width: 120px; animation-duration: 2.8s; animation-delay: 2.5s; }
         .star:nth-child(5) { top: -10%; left: 140%; width: 90px; animation-duration: 3.5s; animation-delay: 3.2s; }
 
-        /* กลุ่มที่เกิดตามขอบขวา (วิ่งข้ามหน้าจอไปทางซ้ายล่าง) */
+        
         .star:nth-child(6) { top: 10%; left: 110%; width: 130px; animation-duration: 2.2s; animation-delay: 1.8s; }
         .star:nth-child(7) { top: 30%; left: 110%; width: 110px; animation-duration: 2.7s; animation-delay: 4.0s; }
         .star:nth-child(8) { top: 50%; left: 110%; width: 140px; animation-duration: 3.0s; animation-delay: 0.8s; }
         .star:nth-child(9) { top: 70%; left: 110%; width: 95px; animation-duration: 2.4s; animation-delay: 2.8s; }
         .star:nth-child(10) { top: 90%; left: 110%; width: 160px; animation-duration: 2.9s; animation-delay: 1.5s; }
 
-        /* สุ่มระยะไกลๆ เพื่อเติมช่องว่าง */
+        
         .star:nth-child(11) { top: 20%; left: 130%; width: 105px; animation-duration: 3.3s; animation-delay: 5.2s; }
         .star:nth-child(12) { top: -20%; left: 100%; width: 135px; animation-duration: 2.6s; animation-delay: 3.5s; }
        
