@@ -1,0 +1,18 @@
+<script>
+        function openApp(appUrl, webUrl) {
+          
+            var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                
+                window.location.href = appUrl;
+                
+                setTimeout(function() {
+                    window.location.href = webUrl;
+                }, 500);
+            } else {
+                
+                window.open(webUrl, '_blank');
+            }
+        }
+    </script>
