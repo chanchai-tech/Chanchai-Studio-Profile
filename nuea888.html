@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 Slot เหนือ 888 🎰</title>
+    <style>
+        body { 
+            font-family: 'Tahoma', sans-serif; 
+            text-align: center; 
+            background-color: #282c34; 
+            color: white; 
+            margin: 0;
+            padding-top: 50px; 
+            overflow: hidden;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .slot-machine { 
+            background: #ffcc00; 
+            padding: 30px; 
+            border-radius: 20px; 
+            display: inline-block; 
+            border: 8px solid #d32f2f; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+        }
+        .slots { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+        .slot { 
+            width: 100px; 
+            height: 100px; 
+            background: white; 
+            border-radius: 15px; 
+            font-size: 60px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: black; 
+            border: 5px solid #333; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+        }
+        button { 
+            background: #d32f2f; 
+            color: white; 
+            border: none; 
+            padding: 15px 40px; 
+            font-size: 24px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            box-shadow: 0 5px 0 #9a0007;
+            transition: 0.1s;
+        }
+        button:active { transform: translateY(5px); box-shadow: 0 0 0 #9a0007; }
+        button:disabled { background: #777; box-shadow: 0 5px 0 #444; cursor: not-allowed; transform: none; }
+        
+        #result { 
+            margin-top: 25px; 
+            font-size: 26px; 
+            font-weight: bold; 
+            min-height: 40px; 
+            color: #ffeb3b; 
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        .sub-text { color: #aaa; font-size: 14px; margin-top: 10px; }
+
+        /* หน้าจอที่จะแสดงรูปตอนแตก */
+        #rickroll-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-content">
+        <h1>🎰 เหนือ 888 🎰</h1>
+        <p>หมุนปุ๊บ ชีวิตเปลี่ยน (เปลี่ยนไปในทางที่แย่ลง)</p>
+        
+        <div class="slot-machine">
+            <div class="slots">
+                <div class="slot" id="slot1">❓</div>
+                <div class="slot" id="slot2">❓</div>
+                <div class="slot" id="slot3">❓</div>
+            </div>
+            <button id="spinButton" onclick="spin()">หมุนวัดดวง!</button>
+            <div id="result">พร้อมรับความซวยหรือยัง?</div>
+        </div>
+        <p class="sub-text">คำเตือน: โปรดระวังโทรศัพท์บินจากการปาของเพื่อน</p>
+    </div>
+
+    <div id="rickroll-container"></div>
+
+    <script>
+        const items = ['🧂', '🍜', '💸', '💩', '💔'];
+        
+        // รวมคำด่าปั่นๆ เวลาหมุนไม่แตก
+        const loseMessages = [
+            "เกลือจัดๆ หมุนใหม่สิวัยรุ่น!",
+            "ดวงไม่มี อย่าฝืนเลยเพื่อน",
+            "หมุนจนนิ้วล็อค ก็ไม่แตกหรอก 555",
+            "สภาพพพพ... ไปทำบุญก่อนไหม?",
+            "ระบบล็อคยูสครับ ร้องไห้ได้เลย",
+            "แห้วแดก! เอาเงินไปกินข้าวเถอะ",
+            "กากเกินนน ให้เด็กอนุบาลมากดยังแตกเลย"
+        ];
+
+        const slot1 = document.getElementById('slot1');
+        const slot2 = document.getElementById('slot2');
+        const slot3 = document.getElementById('slot3');
+        const resultText = document.getElementById('result');
+        const btn = document.getElementById('spinButton');
+        const mainContent = document.getElementById('main-content');
+        const surpriseContainer = document.getElementById('rickroll-container');
+
+        function spin() {
+            // ปิดปุ่มชั่วคราวตอนกำลังหมุน
+            btn.disabled = true;
+            resultText.innerText = "กำลังสุ่มความซวย...";
+            resultText.style.color = "#ffeb3b";
+            
+            let spins = 0;
+            const spinInterval = setInterval(() => {
+                slot1.innerText = items[Math.floor(Math.random() * items.length)];
+                slot2.innerText = items[Math.floor(Math.random() * items.length)];
+                slot3.innerText = items[Math.floor(Math.random() * items.length)];
+                spins++;
+
+                if (spins >= 20) {
+                    clearInterval(spinInterval);
+                    finalizeSpin();
+                }
+            }, 100);
+        }
+
+        function finalizeSpin() {
+            // โอกาสแตก 10% (ถ้าอยากให้แตกง่ายขึ้น เปลี่ยน 0.1 เป็น 0.3 หรือ 0.5 ดูครับ)
+            const isWin = Math.random() < 0.1; 
+
+            if (isWin) {
+                // กรณี: แจ็คพอตแตก!
+                const winItem = items[Math.floor(Math.random() * items.length)];
+                slot1.innerText = slot2.innerText = slot3.innerText = winItem;
+                resultText.style.color = "#00ff00";
+                resultText.innerText = "🎉 แจ็คพอตแตก!! กำลังแจกของรางวัล... 🎉";
+                
+                // รอ 1.5 วิ แล้วโชว์รูป
+              setTimeout(() => {
+                    console.log("เริ่มแสดงรูป...");
+                    mainContent.style.display = "none"; 
+                    surpriseContainer.style.display = "flex"; 
+                    
+                    // ID รูปของคุณเหนือ
+                    const imageID = "1NN9Jmc38mntPb_r7s1K7-uFR2C9H_dAK";
+                    const directLink = `https://lh3.googleusercontent.com/d/${imageID}`;
+                    
+                    surpriseContainer.innerHTML = `<img src="${directLink}" id="finalImage" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">`;
+                    
+                    // เช็กผ่าน Console ถ้าโหลดรูปไม่ขึ้น
+                    document.getElementById('finalImage').onerror = function() {
+                        console.error("รูปโหลดไม่ขึ้น! เช็กสิทธิ์การแชร์ใน Google Drive อีกครั้ง");
+                        surpriseContainer.innerHTML = "<h2 style='color:white'>รูปโหลดไม่ขึ้น เช็กการแชร์ใน Drive</h2>";
+                    };
+                }, 1500);
+            
+        
+
+            } else {
+                // กรณี: หมุนว่าว (ไม่แตก)
+                let final1 = items[Math.floor(Math.random() * items.length)];
+                let final2 = items[Math.floor(Math.random() * items.length)];
+                let final3;
+                
+                // สุ่มยังไงก็ได้ให้ไม่เหมือนกัน 3 ตัว
+                do {
+                    final3 = items[Math.floor(Math.random() * items.length)];
+                } while (final1 === final2 && final2 === final3); 
+
+                slot1.innerText = final1;
+                slot2.innerText = final2;
+                slot3.innerText = final3;
+
+                // สุ่มคำด่ามาโชว์
+                resultText.style.color = "#ffeb3b";
+                resultText.innerText = loseMessages[Math.floor(Math.random() * loseMessages.length)];
+                
+                // ✅ สำคัญ: เปิดปุ่มให้หมุนต่อได้เรื่อยๆ
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
