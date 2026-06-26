@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro QR & Barcode Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338ca;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
+            --border: #e5e7eb;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .app-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            align-items: flex-start;
+        }
+        .controls-panel {
+            background-color: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            flex: 1;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .preview-panel {
+            background-color: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            width: 400px;
+            position: sticky;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 { margin-top: 0; font-size: 24px; color: var(--primary); }
+        h3 { border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-top: 30px; font-size: 18px; }
+        
+        .form-group { margin-bottom: 15px; width: 100%; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; color: #374151; }
+        input[type="text"], input[type="number"], input[type="file"], select {
+            width: 100%; padding: 10px; border: 1px solid var(--border);
+            border-radius: 6px; box-sizing: border-box; font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
+        input[type="color"] {
+            width: 100%; height: 40px; padding: 2px; cursor: pointer; 
+            border-radius: 6px; border: 1px solid var(--border);
+        }
+        
+        .color-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; align-items: end; }
+        
+        .type-selector {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            background: #eef2ff; padding: 6px; border-radius: 8px;
+        }
+        .type-selector button {
+            flex: 1; padding: 12px; border: none; border-radius: 6px;
+            background: transparent; font-weight: bold; cursor: pointer; font-size: 15px;
+            color: #6b7280; transition: all 0.2s ease;
+        }
+        .type-selector button.active {
+            background: white; color: var(--primary);
+            box-shadow: 0 2px 4px rgba(79,70,229,0.15);
+        }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 8px 14px; border: 1px solid var(--border); background: var(--bg);
+            border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s;
+        }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .tab-btn.btn-batch { background: var(--success); color: white; border-color: var(--success); }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        button.btn-primary {
+            background-color: var(--primary); color: white; border: none;
+            padding: 14px 20px; border-radius: 6px; cursor: pointer;
+            width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        button.btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
+        button.btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        
+        .qr-wrapper {
+            margin-top: 10px; padding: 20px; border: 2px dashed #cbd5e1;
+            border-radius: 8px; background-color: #f8fafc;
+            background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
+                              linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #e2e8f0 75%), 
+                              linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            width: 100%; box-sizing: border-box; text-align: center; min-height: 300px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        #qr-canvas svg, #barcode-svg { max-width: 100%; height: auto; }
+
+        .settings-box {
+            background-color: #f8fafc; padding: 15px; border-radius: 8px;
+            border: 1px solid var(--border); margin-bottom: 15px;
+        }
+        .gradient-box { background-color: #eef2ff; border-color: #c7d2fe; }
+        .barcode-box { background-color: #fffbeb; border-color: #fde68a; }
+        
+        #barcode-error { color: var(--error); font-size: 13px; font-weight: bold; display: none; margin-top: 10px; }
+
+        /* การแสดงผลแบบ Responsive สำหรับมือถือและแท็บเล็ต */
+        @media (max-width: 900px) {
+            .app-container { flex-direction: column; }
+            .controls-panel { max-height: none; overflow-y: visible; order: 2; }
+            .preview-panel { width: 100%; position: static; order: 1; margin-bottom: 20px; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="controls-panel">
+        <h2>🛠️ QR Code Settings </h2>
+        
+        <div class="type-selector">
+            <button id="btn-type-qr" class="active" onclick="switchCodeType('qr')">⬛ QR Code</button>
+            <button id="btn-type-barcode" onclick="switchCodeType('barcode')">|||| Barcode</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('url')">ข้อความ / URL</button>
+            <button class="tab-btn" onclick="switchTab('vcard')">นามบัตร (vCard)</button>
+            <button class="tab-btn" onclick="switchTab('wifi')">Wi-Fi</button>
+            <button class="tab-btn" onclick="switchTab('promptpay')">PromptPay</button>
+            <button class="tab-btn btn-batch" onclick="switchTab('batch')">สร้างกลุ่ม (Batch)</button>
+        </div>
+
+        <div id="tab-url" class="tab-content active">
+            <div class="form-group"><label>ข้อมูล / ข้อความ หรือ URL</label><input type="text" id="input-url" placeholder="เช่น Chanchai888 หรือ URL https://www.chanchai888.com" oninput="triggerPreviewUpdate()"></div>
+        </div>
+
+        <div id="tab-vcard" class="tab-content">
+            <div class="form-group"><label>ชื่อ-นามสกุล</label><input type="text" id="vc-name" placeholder="chanchai chari" oninput="triggerPreviewUpdate()"></div>
+            <div class="form-group"><label>เบอร์โทรศัพท์</label><input type="text" id="vc-phone" placeholder="0954748194" oninput="triggerPreviewUpdate()"></div>
+            <div class="form-group"><label>อีเมล</label><input type="text" id="vc-email" placeholder="chanchaichari.north@gmail.com" oninput="triggerPreviewUpdate()"></div>
+            <div class="form-group"><label>ชื่อบริษัท</label><input type="text" id="vc-company" placeholder="บริษัท เช่น Chanchai888 จำกัด" oninput="triggerPreviewUpdate()"></div>
+        </div>
+
+        <div id="tab-wifi" class="tab-content">
+            <div class="form-group"><label>ชื่อ Network (SSID)</label><input type="text" id="wifi-ssid" oninput="triggerPreviewUpdate()"></div>
+            <div class="form-group"><label>รหัสผ่าน</label><input type="text" id="wifi-pass" oninput="triggerPreviewUpdate()"></div>
+            <div class="form-group">
+                <label>ความปลอดภัย</label>
+                <select id="wifi-type" onchange="triggerPreviewUpdate()">
+                    <option value="WPA">WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">ไม่มีรหัส</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="tab-promptpay" class="tab-content">
+            <div class="form-group"><label>เบอร์โทรศัพท์ / บัตรประชาชน / เลขนิติบุคคล</label><input type="text" id="pp-id" oninput="triggerPreviewUpdate()"></div>
+            <div class="form-group"><label>จำนวนเงิน (เว้นว่างได้)</label><input type="number" id="pp-amount" oninput="triggerPreviewUpdate()"></div>
+        </div>
+
+        <div id="tab-batch" class="tab-content">
+            <div class="form-group"><label>อัปโหลดไฟล์ข้อมูล (.csv)</label><input type="file" id="batch-file" accept=".csv"></div>
+            <button id="btn-batch-process" class="btn-primary" onclick="generateBatch()">เริ่มสร้างไฟล์กลุ่ม (ZIP)</button>
+        </div>
+
+        <h3>🎨 การปรับแต่งดีไซน์</h3>
+        
+        <div class="form-group color-row settings-box">
+            <div>
+                <label id="label-color1">สีหลัก</label>
+                <input type="color" id="color-dot1" value="#000000" onchange="triggerPreviewUpdate()">
+            </div>
+            <div>
+                <label>สีพื้นหลัง</label>
+                <input type="color" id="color-bg" value="#ffffff" onchange="triggerPreviewUpdate()">
+            </div>
+            <div style="display: flex; align-items: center; padding-bottom: 10px;">
+                <input type="checkbox" id="bg-transparent" onchange="triggerPreviewUpdate()" style="width:auto; margin-right:8px;">
+                <label for="bg-transparent" style="margin:0; cursor:pointer;">พื้นหลังโปร่งใส</label>
+            </div>
+        </div>
+
+        <div id="barcode-settings-wrapper" class="settings-box barcode-box" style="display: none;">
+            <div class="color-row">
+                <div style="grid-column: span 2;">
+                    <label>มาตรฐานบาร์โค้ด</label>
+                    <select id="barcode-format" onchange="triggerPreviewUpdate()">
+                        <option value="CODE128">CODE128 (แนะนำ - รองรับอักษรและตัวเลข)</option>
+                        <option value="EAN13">EAN-13 (สินค้าทั่วไป 12-13 หลัก)</option>
+                        <option value="UPC">UPC (สินค้าสากล 11-12 หลัก)</option>
+                        <option value="CODE39">CODE39 (อักษรใหญ่/ตัวเลข)</option>
+                        <option value="ITF14">ITF-14 (ลังสินค้า)</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; padding-bottom: 10px;">
+                    <input type="checkbox" id="barcode-text-display" checked onchange="triggerPreviewUpdate()" style="width:auto; margin-right:8px;">
+                    <label for="barcode-text-display" style="margin:0; cursor:pointer;">แสดงตัวเลข</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="qr-settings-wrapper">
+            <div class="form-group">
+                <label>โหมดการลงสี (Color Mode)</label>
+                <select id="color-mode" onchange="toggleColorMode()">
+                    <option value="solid" selected>สีเดียว (Solid)</option>
+                    <option value="gradient">ไล่สีสมูทแบบ 3 ระดับ (Gradient) ✨</option>
+                </select>
+            </div>
+
+            <div id="gradient-settings-div" class="settings-box gradient-box" style="display: none;">
+                <div class="color-row">
+                    <div><label>สีที่ 2 (กลาง)</label><input type="color" id="color-dot-mid" value="#7e22ce" onchange="triggerPreviewUpdate()"></div>
+                    <div><label>สีที่ 3 (ขอบ)</label><input type="color" id="color-dot2" value="#c084fc" onchange="triggerPreviewUpdate()"></div>
+                    <div><label>จุดสมดุล: <span id="midpoint-val">50</span>%</label><input type="range" id="midpoint-balance" min="0" max="100" value="50" oninput="updateMidpoint()" onchange="triggerPreviewUpdate()" style="width:100%; cursor:pointer;"></div>
+                </div>
+                <div class="color-row" style="margin-top: 15px;">
+                    <div><label>รูปแบบ</label><select id="gradient-type" onchange="triggerPreviewUpdate()"><option value="linear">เส้นตรง</option><option value="radial" selected>กระจายวงกลม</option></select></div>
+                    <div><label>ทิศทาง</label><select id="gradient-rotation" onchange="triggerPreviewUpdate()"><option value="0">ซ้ายไปขวา</option><option value="45" selected>ทแยงมุมลงขวา</option><option value="90">บนลงล่าง</option><option value="135">ทแยงมุมซ้าย</option></select></div>
+                    <div><label>กรอบตา 3 มุม</label><select id="gradient-blend" onchange="triggerPreviewUpdate()"><option value="solid2" selected>สีทึบ (สีขอบนอก)</option><option value="solid1">สีทึบ (สีในสุด)</option><option value="gradient">ไล่สีอิสระ</option></select></div>
+                </div>
+            </div>
+            
+            <div class="form-group color-row">
+                <div style="grid-column: span 3;">
+                    <label>รูปร่างจุด (Dot Pattern)</label>
+                    <select id="pattern-dot" onchange="triggerPreviewUpdate()">
+                        <option value="square">คลาสสิก (Square)</option>
+                        <option value="dots" selected>จุดไข่ปลา (Dots)</option>
+                        <option value="rounded">โค้งมน (Rounded)</option>
+                        <option value="extra-rounded">โค้งมนพิเศษ ✨</option>
+                        <option value="classy-rounded">หรูหราแบบโค้งมน ✨</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group color-row">
+                <div style="grid-column: span 2;">
+                    <label>รูปร่างกรอบตา (Eye Frame)</label>
+                    <select id="pattern-eye-frame" onchange="triggerPreviewUpdate()">
+                        <option value="square">สี่เหลี่ยม</option>
+                        <option value="dot">จุดกลม</option>
+                        <option value="extra-rounded">โค้งมนพิเศษ ✨</option>
+                    </select>
+                </div>
+                <div style="grid-column: span 1;">
+                    <label>จุดในตา (Eye Dot)</label>
+                    <select id="pattern-eye-dot" onchange="triggerPreviewUpdate()">
+                        <option value="square">สี่เหลี่ยม</option>
+                        <option value="dot">วงกลม</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group settings-box">
+                <label>แทรกโลโก้ตรงกลาง (เฉพาะ QR)</label>
+                <input type="file" id="logo-file" accept="image/*" onchange="handleLogoUpload(event)">
+                <button onclick="clearLogo()" style="margin-top:8px; padding:6px 12px; background:#ef4444; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">🗑️ ลบโลโก้</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="preview-panel">
+        <h2>Live Preview 👁️</h2>
+        
+        <div class="qr-wrapper">
+            <div id="qr-canvas"></div>
+            <svg id="barcode-svg" style="display: none;"></svg>
+        </div>
+        <div id="barcode-error">❌ ข้อมูลไม่ตรงตามมาตรฐานบาร์โค้ดที่เลือก</div>
+        
+        <div style="width: 100%; margin-top: 25px;">
+            <div class="form-group">
+                <label>ความละเอียด (พิกเซล)</label>
+                <input type="number" id="export-size" value="1000" min="300" max="4000">
+            </div>
+            <div class="form-group">
+                <label>นามสกุลไฟล์ตอนบันทึก</label>
+                <select id="export-format">
+                    <option value="png">PNG (ภาพคมชัด, รองรับโปร่งใส)</option>
+                    <option value="jpeg">JPEG (ภาพพื้นหลังทึบ)</option>
+                    <option value="svg">SVG (เวกเตอร์, งานสิ่งพิมพ์)</option>
+                    <option value="pdf">PDF (ไฟล์เอกสารพร้อมปริ้น)</option>
+                </select>
+            </div>
+            <button id="btn-download" class="btn-primary" onclick="downloadCode()">💾 ดาวน์โหลดไฟล์</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // System Variables
+    let activeTab = 'url';
+    let currentCodeType = 'qr';
+    let uploadedLogo = null;
+    let qrCode = null; 
+    let debounceTimer; // สำหรับระบบ Performance Optimization
+
+    // System Initialization
+    function initApp() {
+        qrCode = new QRCodeStyling({ width: 300, height: 300, type: "svg", data: "https://www.example.com" });
+        qrCode.append(document.getElementById("qr-canvas"));
+        renderPreview();
+    }
+    document.addEventListener("DOMContentLoaded", initApp);
+
+    // --- UI Controllers ---
+    function switchCodeType(type) {
+        currentCodeType = type;
+        document.getElementById('btn-type-qr').classList.toggle('active', type === 'qr');
+        document.getElementById('btn-type-barcode').classList.toggle('active', type === 'barcode');
+        
+        document.getElementById('qr-settings-wrapper').style.display = type === 'qr' ? 'block' : 'none';
+        document.getElementById('barcode-settings-wrapper').style.display = type === 'barcode' ? 'block' : 'none';
+        document.getElementById('qr-canvas').style.display = type === 'qr' ? 'block' : 'none';
+        
+        triggerPreviewUpdate();
+    }
+
+    function switchTab(tabId) {
+        activeTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        triggerPreviewUpdate();
+    }
+
+    function toggleColorMode() {
+        const mode = document.getElementById('color-mode').value;
+        document.getElementById('label-color1').innerText = mode === 'gradient' ? 'สีที่ 1 (ในสุด)' : 'สีหลัก';
+        document.getElementById('gradient-settings-div').style.display = mode === 'gradient' ? 'block' : 'none';
+        triggerPreviewUpdate();
+    }
+
+    function updateMidpoint() { 
+        document.getElementById('midpoint-val').innerText = document.getElementById('midpoint-balance').value; 
+    }
+
+    function handleLogoUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => { uploadedLogo = e.target.result; triggerPreviewUpdate(); };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function clearLogo() { 
+        uploadedLogo = null; 
+        document.getElementById('logo-file').value = ""; 
+        triggerPreviewUpdate(); 
+    }
+
+    // --- Data Processing ---
+    function getActiveData() {
+        if (activeTab === 'url') return document.getElementById('input-url').value || "123456789012";
+        if (activeTab === 'vcard') return `BEGIN:VCARD\nVERSION:3.0\nFN:${document.getElementById('vc-name').value}\nTEL:${document.getElementById('vc-phone').value}\nEMAIL:${document.getElementById('vc-email').value}\nORG:${document.getElementById('vc-company').value}\nEND:VCARD`;
+        if (activeTab === 'wifi') return `WIFI:T:${document.getElementById('wifi-type').value};S:${document.getElementById('wifi-ssid').value};P:${document.getElementById('wifi-pass').value};;`;
+        if (activeTab === 'promptpay') return generatePromptPayPayload(document.getElementById('pp-id').value, document.getElementById('pp-amount').value);
+        return "123456789012";
+    }
+
+    // --- Core Rendering Engine (Debounced for Performance) ---
+    function triggerPreviewUpdate() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(renderPreview, 250); // หน่วงเวลา 250ms ลดการกระตุกเวลาพิมพ์
+    }
+
+    function renderPreview() {
+        const dataStr = getActiveData();
+        const mainColor = document.getElementById('color-dot1').value;
+        const bgColor = document.getElementById('color-bg').value;
+        const isTransparent = document.getElementById('bg-transparent').checked;
+        const finalBgColor = isTransparent ? "transparent" : bgColor;
+        
+        const errorText = document.getElementById('barcode-error');
+        const btnDownload = document.getElementById('btn-download');
+
+        if (currentCodeType === 'barcode') {
+            document.getElementById('barcode-svg').style.display = 'inline-block';
+            try {
+                JsBarcode("#barcode-svg", dataStr, {
+                    format: document.getElementById('barcode-format').value,
+                    lineColor: mainColor,
+                    background: finalBgColor === "transparent" ? "#ffffff00" : finalBgColor,
+                    displayValue: document.getElementById('barcode-text-display').checked,
+                    width: 2, height: 100, margin: 10
+                });
+                errorText.style.display = 'none';
+                btnDownload.disabled = false;
+            } catch (error) {
+                document.getElementById('barcode-svg').style.display = 'none';
+                errorText.style.display = 'block';
+                btnDownload.disabled = true; // ล็อกปุ่มโหลดหากบาร์โค้ด Error
+            }
+        } else {
+            document.getElementById('barcode-svg').style.display = 'none';
+            errorText.style.display = 'none';
+            btnDownload.disabled = false;
+            
+            const colorMode = document.getElementById('color-mode').value;
+            let dotColorConfig = {};
+            let cornerSquareConfig = { type: document.getElementById('pattern-eye-frame').value };
+            let cornerDotConfig = { type: document.getElementById('pattern-eye-dot').value };
+
+            if (colorMode === 'solid') {
+                dotColorConfig = { color: mainColor };
+                cornerSquareConfig.color = mainColor;
+                cornerDotConfig.color = mainColor;
+            } else {
+                const colorMid = document.getElementById('color-dot-mid').value;
+                const color2 = document.getElementById('color-dot2').value;
+                const rotRad = parseInt(document.getElementById('gradient-rotation').value) * (Math.PI / 180);
+                const midOff = parseInt(document.getElementById('midpoint-balance').value) / 100;
+                const blend = document.getElementById('gradient-blend').value;
+                
+                const gradSettings = { type: document.getElementById('gradient-type').value, rotation: rotRad, colorStops: [{ offset: 0, color: mainColor }, { offset: midOff, color: colorMid }, { offset: 1, color: color2 }] };
+                dotColorConfig = { gradient: gradSettings };
+                
+                if (blend === 'solid1') { cornerSquareConfig.color = mainColor; cornerDotConfig.color = mainColor; } 
+                else if (blend === 'solid2') { cornerSquareConfig.color = color2; cornerDotConfig.color = color2; } 
+                else { cornerSquareConfig.gradient = gradSettings; cornerDotConfig.gradient = gradSettings; }
+            }
+
+            const canvasContainer = document.getElementById('qr-canvas');
+            canvasContainer.innerHTML = ''; 
+            qrCode = new QRCodeStyling({
+                width: 300, height: 300, type: "svg", data: dataStr, image: uploadedLogo,
+                dotsOptions: { type: document.getElementById('pattern-dot').value, ...dotColorConfig },
+                cornersSquareOptions: cornerSquareConfig, cornersDotOptions: cornerDotConfig,
+                backgroundOptions: { color: finalBgColor === "transparent" ? "rgba(255,255,255,0)" : finalBgColor },
+                imageOptions: { crossOrigin: "anonymous", margin: 10 }
+            });
+            qrCode.append(canvasContainer);
+        }
+    }
+
+    const blobToDataURL = blob => new Promise((resolve, reject) => {
+        const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(blob);
+    });
+
+    // --- Download Engine ---
+    async function downloadCode() {
+        const btnDownload = document.getElementById('btn-download');
+        btnDownload.disabled = true;
+        btnDownload.innerText = "กำลังเตรียมไฟล์...";
+
+        try {
+            const format = document.getElementById('export-format').value;
+            const size = parseInt(document.getElementById('export-size').value);
+            const dataStr = getActiveData();
+
+            if (currentCodeType === 'barcode') {
+                const tempCanvas = document.createElement("canvas");
+                let scale = Math.max(2, size / 200); 
+                JsBarcode(tempCanvas, dataStr, {
+                    format: document.getElementById('barcode-format').value,
+                    lineColor: document.getElementById('color-dot1').value,
+                    background: document.getElementById('bg-transparent').checked ? "#ffffff00" : document.getElementById('color-bg').value,
+                    displayValue: document.getElementById('barcode-text-display').checked,
+                    width: scale, height: scale * 50, margin: scale * 10
+                });
+
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [tempCanvas.width, tempCanvas.height] });
+                    pdf.addImage(tempCanvas.toDataURL("image/png"), 'PNG', 0, 0, tempCanvas.width, tempCanvas.height);
+                    pdf.save('barcode.pdf');
+                } else if (format === 'svg') {
+                    const svgData = new XMLSerializer().serializeToString(document.getElementById("barcode-svg"));
+                    const blob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+                    saveAs(blob, "barcode.svg");
+                } else {
+                    tempCanvas.toBlob(function(blob) { saveAs(blob, `barcode.${format}`); });
+                }
+            } else {
+                qrCode.update({ width: size, height: size });
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [size, size] });
+                    const blob = await qrCode.getRawData("png");
+                    const base64data = await blobToDataURL(blob);
+                    pdf.addImage(base64data, 'PNG', 0, 0, size, size);
+                    pdf.save('qrcode.pdf');
+                } else {
+                    await qrCode.download({ name: `qrcode`, extension: format });
+                }
+                setTimeout(() => qrCode.update({ width: 300, height: 300 }), 500); // คืนขนาดพรีวิว
+            }
+        } catch (e) {
+            console.error("Download Error:", e);
+            alert("เกิดข้อผิดพลาดในการดาวน์โหลด กรุณาลองใหม่อีกครั้ง");
+        } finally {
+            btnDownload.disabled = false;
+            btnDownload.innerText = "💾 ดาวน์โหลดไฟล์";
+        }
+    }
+
+    // --- Batch Processing Engine ---
+    async function generateBatch() {
+        const fileInput = document.getElementById('batch-file');
+        const btnBatch = document.getElementById('btn-batch-process');
+
+        if (!fileInput.files[0]) return alert("กรุณาอัปโหลดไฟล์ CSV ก่อนครับ");
+
+        btnBatch.disabled = true;
+        btnBatch.innerText = "⏳ กำลังสร้างไฟล์ ZIP...";
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const lines = e.target.result.split('\n').filter(line => line.trim() !== '');
+                if (lines.length === 0) throw new Error("ไฟล์ว่างเปล่า");
+                
+                const zip = new JSZip();
+                const format = document.getElementById('export-format').value;
+                const size = parseInt(document.getElementById('export-size').value);
+                let successCount = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    const currentData = lines[i].trim();
+                    
+                    if (currentCodeType === 'barcode') {
+                        try {
+                            let scale = Math.max(2, size / 200); 
+                            const tempCanvas = document.createElement("canvas");
+                            JsBarcode(tempCanvas, currentData, {
+                                format: document.getElementById('barcode-format').value,
+                                lineColor: document.getElementById('color-dot1').value,
+                                background: document.getElementById('bg-transparent').checked ? "#ffffff00" : document.getElementById('color-bg').value,
+                                displayValue: document.getElementById('barcode-text-display').checked,
+                                width: scale, height: scale * 50, margin: scale * 10
+                            });
+                            
+                            if (format === 'pdf') {
+                                const { jsPDF } = window.jspdf;
+                                const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [tempCanvas.width, tempCanvas.height] });
+                                pdf.addImage(tempCanvas.toDataURL("image/png"), 'PNG', 0, 0, tempCanvas.width, tempCanvas.height);
+                                zip.file(`barcode_${i+1}.pdf`, pdf.output('blob'));
+                            } else {
+                                const dataUrl = tempCanvas.toDataURL(`image/png`);
+                                const bstr = atob(dataUrl.split(',')[1]);
+                                let n = bstr.length; const u8arr = new Uint8Array(n);
+                                while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+                                zip.file(`barcode_${i+1}.png`, new Blob([u8arr], {type:'image/png'}));
+                            }
+                            successCount++;
+                        } catch(err) { console.warn(`ข้ามแถวที่ ${i+1}: รูปแบบบาร์โค้ดไม่รองรับข้อมูล "${currentData}"`); }
+                    } else {
+                        // Batch for QR Code
+                        const tempQr = new QRCodeStyling({
+                            width: size, height: size, type: "svg", data: currentData, image: uploadedLogo,
+                            dotsOptions: qrCode._options.dotsOptions, backgroundOptions: qrCode._options.backgroundOptions,
+                            cornersSquareOptions: qrCode._options.cornersSquareOptions, cornersDotOptions: qrCode._options.cornersDotOptions,
+                            imageOptions: { crossOrigin: "anonymous", margin: 10 }
+                        });
+                        
+                        if (format === 'pdf') {
+                            const { jsPDF } = window.jspdf;
+                            const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [size, size] });
+                            const pngBlob = await tempQr.getRawData("png");
+                            const base64data = await blobToDataURL(pngBlob);
+                            pdf.addImage(base64data, 'PNG', 0, 0, size, size);
+                            zip.file(`qrcode_${i+1}.pdf`, pdf.output('blob'));
+                        } else {
+                            const blob = await tempQr.getRawData(format);
+                            zip.file(`qrcode_${i+1}.${format}`, blob);
+                        }
+                        successCount++;
+                    }
+                }
+
+                if (successCount === 0) throw new Error("ไม่สามารถสร้างรหัสได้เลย (ข้อมูลอาจไม่ตรงกับมาตรฐานบาร์โค้ด)");
+
+                const content = await zip.generateAsync({type:"blob"});
+                saveAs(content, `batch_${currentCodeType}s.zip`);
+                alert(`✅ สร้างเสร็จสมบูรณ์ จำนวน ${successCount} ไฟล์ดาวน์โหลดลงเครื่องแล้ว!`);
+
+            } catch (err) {
+                alert(`❌ เกิดข้อผิดพลาด: ${err.message}`);
+            } finally {
+                btnBatch.disabled = false;
+                btnBatch.innerText = "เริ่มสร้างไฟล์กลุ่ม (ZIP)";
+                fileInput.value = ""; // เคลียร์ไฟล์เก่า
+            }
+        };
+        reader.readAsText(fileInput.files[0]);
+    }
+
+    // --- Utility: PromptPay Generator ---
+    function generatePromptPayPayload(id, amount) {
+        if(!id) return "00020101021129370016A000000677010111021300000000000005802TH53037646304";
+        let target = id.replace(/[^0-9]/g, ''); 
+        let idType = target.length === 15 ? '03' : (target.length === 13 ? '02' : '01');
+        let formattedId = idType === '01' ? '0066' + target.substring(1) : target;
+        let payload = `00020101021129370016A000000677010111${idType}${formattedId.length.toString().padStart(2, '0')}${formattedId}5802TH5303764`;
+        if (amount && parseFloat(amount) > 0) {
+            let amtStr = parseFloat(amount).toFixed(2);
+            payload += `54${amtStr.length.toString().padStart(2, '0')}${amtStr}`;
+        }
+        payload += '6304';
+        let crc = 0xFFFF;
+        for (let c = 0; c < payload.length; c++) {
+            crc ^= payload.charCodeAt(c) << 8;
+            for (let i = 0; i < 8; i++) {
+                if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+                else crc = crc << 1;
+            }
+        }
+        return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    }
+</script>
+</body>
+</html>
