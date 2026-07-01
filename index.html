@@ -212,6 +212,40 @@
         <div class="star"></div>
     </div>
 
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3QrkYw3SBmdLg-wRv6kWk8qTg_y3zddU",
+            authDomain: "chanchai-studio-main.firebaseapp.com",
+            projectId: "chanchai-studio-main",
+            storageBucket: "chanchai-studio-main.firebasestorage.app",
+            messagingSenderId: "545915470143",
+            appId: "1:545915470143:web:c8acb390afbba7efba938a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.checkPassword = async function() {
+            const email = "chanchaichari.north@gmail.com";
+            const password = document.getElementById('sysPassword').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = "admin.html";
+            } catch (error) {
+                errorMsg.classList.remove('hidden');
+                errorMsg.innerText = "ACCESS DENIED.";
+            }
+        };
+    </script>
+
+</body> </html>
+
     </body>
 
     <div class="min-h-screen flex items-center justify-center p-4 py-12">
