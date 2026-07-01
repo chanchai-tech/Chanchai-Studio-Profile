@@ -226,22 +226,31 @@
             appId: "1:545915470143:web:c8acb390afbba7efba938a"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        // เชื่อมต่อ
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    // เช็คว่าเชื่อมต่อสำเร็จไหม
+    console.log("Firebase Initialized Successfully!");
 
-        window.checkPassword = async function() {
-            const email = "chanchaichari.north@gmail.com";
-            const password = document.getElementById('sysPassword').value;
-            const errorMsg = document.getElementById('errorMsg');
+    // ฟังก์ชัน Login
+    window.checkPassword = async function() {
+        const email = "อีเมลที่คุณสมัคร Admin ใน Firebase"; 
+        const password = document.getElementById('sysPassword').value;
+        const errorMsg = document.getElementById('errorMsg');
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = "admin.html";
-            } catch (error) {
-                errorMsg.classList.remove('hidden');
-                errorMsg.innerText = "ACCESS DENIED.";
-            }
-        };
+        console.log("Attempting login..."); // เช็คว่าปุ่มกดทำงานไหม
+
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            console.log("Login Success!"); // เช็คว่า Login สำเร็จไหม
+            window.location.href = "admin.html"; // ไปหน้า admin
+        } catch (error) {
+            console.error("Login Error:", error.message); // ดู Error ตรงนี้ถ้าเข้าไม่ได้
+            errorMsg.classList.remove('hidden');
+            errorMsg.innerText = "ACCESS DENIED.";
+        }
+    };
     </script>
 
 </body> </html>
