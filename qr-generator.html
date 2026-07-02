@@ -11,6 +11,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
+
+        {
+    box-sizing: border-box;
+     }
         :root {
             --primary: #4F46E5;
             --primary-hover: #4338ca;
@@ -126,8 +130,17 @@
             display: flex; justify-content: center; align-items: center;
         }
         
-        #qr-canvas svg, #barcode-svg { max-width: 100%; height: auto; }
 
+        #qr-canvas {
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+}
+#qr-canvas svg, #barcode-svg { 
+    max-width: 100%; 
+    height: auto; 
+}
+     
         .settings-box {
             background-color: #f8fafc; padding: 15px; border-radius: 8px;
             border: 1px solid var(--border); margin-bottom: 15px;
@@ -138,11 +151,53 @@
         #barcode-error { color: var(--error); font-size: 13px; font-weight: bold; display: none; margin-top: 10px; }
 
         /* การแสดงผลแบบ Responsive สำหรับมือถือและแท็บเล็ต */
-        @media (max-width: 900px) {
-            .app-container { flex-direction: column; }
-            .controls-panel { max-height: none; overflow-y: visible; order: 2; }
-            .preview-panel { width: 100%; position: static; order: 1; margin-bottom: 20px; box-sizing: border-box; }
-        }
+  @media (max-width: 900px) {
+    body {
+        padding: 10px; /* ลดขอบหน้าจอหลัก */
+    }
+    .app-container { 
+        flex-direction: column; 
+        gap: 15px; 
+    }
+    .controls-panel, .preview-panel { 
+        padding: 15px; /* ลดขอบด้านในกล่องให้กระชับขึ้น */
+        width: 100%;
+    }
+    .controls-panel { 
+        max-height: none; 
+        overflow-y: visible; 
+        order: 2; 
+    }
+    .preview-panel { 
+        position: static; 
+        order: 1; 
+        margin-bottom: 0px; 
+    }
+    .qr-wrapper {
+        min-height: auto; /* ยกเลิกการล็อคความสูงที่ทำให้ดูโล่งเกินไป */
+        padding: 15px;
+    }
+    .type-selector button {
+        padding: 8px; /* ลดขนาดปุ่มเลือกประเภท */
+        font-size: 14px;
+    }
+    .tab-btn {
+        padding: 6px 10px; /* ลดขนาดปุ่มเมนู */
+        font-size: 12px;
+        flex: 1 1 auto; /* ให้ปุ่มเฉลี่ยพื้นที่กันพอดีจอ */
+        text-align: center;
+    }
+    h2 { font-size: 20px; }
+    h3 { font-size: 16px; margin-top: 20px; }
+    
+    /* จัดการให้กล่องเลือกสีแสดงผล 2 คอลัมน์บนมือถือ จะได้ไม่ล้น */
+    .color-row {
+        grid-template-columns: 1fr 1fr; 
+    }
+    .color-row > div:first-child {
+        grid-column: 1 / -1; /* ให้สีหลักกินพื้นที่เต็มแถวแรกถ้าพื้นที่ไม่พอ */
+    }
+}
     </style>
 </head>
 <body>
